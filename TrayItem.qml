@@ -1,30 +1,33 @@
+import QtQuick
 import Quickshell
 import Quickshell.Widgets
-import QtQuick
 
 BarButton {
-    id: root
-    required property var item
-    implicitWidth: 16
-    tooltip: [item.tooltipTitle || item.title, item.tooltipDescription].filter(Boolean).join("\n")
+  id: root
 
-    IconImage {
-        anchors.centerIn: parent
-        implicitSize: 16
-        source: root.item.icon
-    }
+  required property var item
 
-    onClicked: button => {
-        if (button === Qt.MiddleButton) {
-            item.secondaryActivate();
-        } else if (button === Qt.RightButton || (button === Qt.LeftButton && item.onlyMenu)) {
-            const window = root.QsWindow.window;
-            if (!window) return;
-            const point = root.QsWindow.contentItem.mapFromItem(root, 0, root.height);
-            item.display(window, point.x, point.y);
-        } else if (button === Qt.LeftButton) {
-            item.activate();
-        }
+  implicitWidth: 16
+  tooltip: [item.tooltipTitle || item.title, item.tooltipDescription].filter(Boolean).join("\n")
+
+  onClicked: button => {
+    if (button === Qt.MiddleButton) {
+      item.secondaryActivate();
+    } else if (button === Qt.RightButton || (button === Qt.LeftButton && item.onlyMenu)) {
+      const window = root.QsWindow.window;
+      if (!window)
+        return;
+      const point = root.QsWindow.contentItem.mapFromItem(root, 0, root.height);
+      item.display(window, point.x, point.y);
+    } else if (button === Qt.LeftButton) {
+      item.activate();
     }
-    onScrolled: (delta, horizontal) => item.scroll(delta, horizontal)
+  }
+  onScrolled: (delta, horizontal) => item.scroll(delta, horizontal)
+
+  IconImage {
+    anchors.centerIn: parent
+    implicitSize: 16
+    source: root.item.icon
+  }
 }

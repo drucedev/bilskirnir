@@ -1,4 +1,6 @@
 # Per-machine output list; see README.
 local.json
+# Quickshell writes machine-specific import paths here for qmlls.
+.qmlls.ini
 # direnv cache for the flake devShell.
 .direnv/

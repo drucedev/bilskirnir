@@ -16,6 +16,6 @@ are what Quickshell loads; keep tooling out of the root otherwise.
 Inside the devShell (`nix develop` or direnv):
 
 ```sh
-node --test
-shellcheck install.sh
+make check
+make test
 ```
