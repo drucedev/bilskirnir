@@ -2,57 +2,62 @@ import QtQuick
 import QtQuick.Controls
 
 Item {
-    id: root
+  id: root
 
-    property alias text: label.text
-    property color foreground: Style.text
-    property string tooltip: ""
-    readonly property bool hovered: mouse.containsMouse
-    signal clicked(int button)
-    signal scrolled(real delta, bool horizontal)
+  property color foreground: Style.text
+  readonly property bool hovered: mouse.containsMouse
+  property alias text: label.text
+  property string tooltip: ""
 
-    implicitWidth: Math.max(24, label.implicitWidth + 8)
-    implicitHeight: Style.barHeight
+  signal clicked(int button)
+  signal scrolled(real delta, bool horizontal)
 
-    Text {
-        id: label
-        anchors.centerIn: parent
-        color: root.foreground
-        font.family: Style.fontFamily
-        font.pixelSize: Style.fontSize
-        textFormat: Text.PlainText
+  Accessible.name: tooltip || text
+  Accessible.role: Accessible.Button
+  implicitHeight: Style.barHeight
+  implicitWidth: Math.max(24, label.implicitWidth + 8)
+
+  Accessible.onPressAction: root.clicked(Qt.LeftButton)
+
+  Text {
+    id: label
+
+    anchors.centerIn: parent
+    color: root.foreground
+    font.family: Style.fontFamily
+    font.pixelSize: Style.fontSize
+    textFormat: Text.PlainText
+  }
+  MouseArea {
+    id: mouse
+
+    acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+    anchors.fill: parent
+    hoverEnabled: true
+
+    onClicked: event => root.clicked(event.button)
+    onWheel: event => {
+      const horizontal = event.angleDelta.y === 0;
+      root.scrolled(horizontal ? event.angleDelta.x : event.angleDelta.y, horizontal);
     }
+  }
+  ToolTip {
+    delay: 500
+    // Item popups are clipped by the panel's 36px surface.
+    popupType: Popup.Window
+    text: root.tooltip
+    visible: root.hovered && root.tooltip !== ""
+    y: root.height + 2
 
-    MouseArea {
-        id: mouse
-        anchors.fill: parent
-        hoverEnabled: true
-        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-        onClicked: event => root.clicked(event.button)
-        onWheel: event => {
-            const horizontal = event.angleDelta.y === 0;
-            root.scrolled(horizontal ? event.angleDelta.x : event.angleDelta.y, horizontal);
-        }
+    background: Rectangle {
+      color: Style.base
     }
-
-    ToolTip {
-        // Item popups are clipped by the panel's 36px surface.
-        popupType: Popup.Window
-        y: root.height + 2
-        visible: root.hovered && root.tooltip !== ""
-        delay: 500
-        text: root.tooltip
-        contentItem: Text {
-            text: root.tooltip
-            color: Style.text
-            font.family: Style.fontFamily
-            font.pixelSize: Style.fontSize
-            textFormat: Text.PlainText
-        }
-        background: Rectangle { color: Style.base }
+    contentItem: Text {
+      color: Style.text
+      font.family: Style.fontFamily
+      font.pixelSize: Style.fontSize
+      text: root.tooltip
+      textFormat: Text.PlainText
     }
-
-    Accessible.role: Accessible.Button
-    Accessible.name: tooltip || text
-    Accessible.onPressAction: root.clicked(Qt.LeftButton)
+  }
 }

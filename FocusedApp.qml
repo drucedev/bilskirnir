@@ -1,74 +1,81 @@
 pragma ComponentBehavior: Bound
-import Quickshell
 import QtQuick
 import QtQuick.Controls
+import Quickshell
 import "BarLogic.js" as Logic
 
 Item {
-    id: root
-    required property var service
+  id: root
 
-    // Desktop entries are scanned after startup. A constant applications model
-    // does not notify bindings, so the revision forces the name to resolve.
-    property int desktopRevision: 0
-    readonly property var window: service.focusedWindow
-    readonly property string appId: window && window.app_id ? String(window.app_id) : ""
-    readonly property var entry: {
-        if (desktopRevision === 0 || appId === "") return null;
-        return DesktopEntries.byId(appId) || DesktopEntries.heuristicLookup(appId);
-    }
-    readonly property string name: desktopRevision === 0 ? "" : Logic.appName(window, entry && entry.name ? entry.name : "")
-    readonly property string title: window && window.title ? String(window.title).trim() : ""
-    readonly property string tooltip: name !== "" && title !== "" && title !== name ? title : ""
+  readonly property string appId: window && window.app_id ? String(window.app_id) : ""
 
-    visible: name !== ""
-    implicitWidth: visible ? Math.min(280, label.implicitWidth) : 0
-    implicitHeight: Style.barHeight
+  // Desktop entries are scanned after startup. A constant applications model
+  // does not notify bindings, so the revision forces the name to resolve.
+  property int desktopRevision: 0
+  readonly property var entry: {
+    if (desktopRevision === 0 || appId === "")
+      return null;
+    return DesktopEntries.byId(appId) || DesktopEntries.heuristicLookup(appId);
+  }
+  readonly property string name: desktopRevision === 0 ? "" : Logic.appName(window, entry && entry.name ? entry.name : "")
+  required property var service
+  readonly property string title: window && window.title ? String(window.title).trim() : ""
+  readonly property string tooltip: name !== "" && title !== "" && title !== name ? title : ""
+  readonly property var window: service.focusedWindow
 
-    Component.onCompleted: {
-        if (DesktopEntries.applications.values.length > 0) root.desktopRevision = 1;
-    }
+  Accessible.name: name
+  Accessible.role: Accessible.StaticText
+  implicitHeight: Style.barHeight
+  implicitWidth: visible ? Math.min(280, label.implicitWidth) : 0
+  visible: name !== ""
 
-    Connections {
-        target: DesktopEntries
-        function onApplicationsChanged() { root.desktopRevision++; }
-    }
+  Component.onCompleted: {
+    if (DesktopEntries.applications.values.length > 0)
+      root.desktopRevision = 1;
+  }
 
-    Text {
-        id: label
-        anchors.left: parent.left
-        anchors.verticalCenter: parent.verticalCenter
-        width: parent.width
-        text: root.name
-        color: Style.text
-        font.family: Style.fontFamily
-        font.pixelSize: Style.fontSize
-        textFormat: Text.PlainText
-        elide: Text.ElideRight
+  Connections {
+    function onApplicationsChanged() {
+      root.desktopRevision++;
     }
 
-    MouseArea {
-        id: mouse
-        anchors.fill: parent
-        hoverEnabled: true
-    }
+    target: DesktopEntries
+  }
+  Text {
+    id: label
 
-    ToolTip {
-        popupType: Popup.Window
-        y: root.height + 2
-        visible: mouse.containsMouse && root.tooltip !== ""
-        delay: 500
-        text: root.tooltip
-        contentItem: Text {
-            text: root.tooltip
-            color: Style.text
-            font.family: Style.fontFamily
-            font.pixelSize: Style.fontSize
-            textFormat: Text.PlainText
-        }
-        background: Rectangle { color: Style.base }
-    }
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    color: Style.text
+    elide: Text.ElideRight
+    font.family: Style.fontFamily
+    font.pixelSize: Style.fontSize
+    text: root.name
+    textFormat: Text.PlainText
+    width: parent.width
+  }
+  MouseArea {
+    id: mouse
 
-    Accessible.role: Accessible.StaticText
-    Accessible.name: name
+    anchors.fill: parent
+    hoverEnabled: true
+  }
+  ToolTip {
+    delay: 500
+    popupType: Popup.Window
+    text: root.tooltip
+    visible: mouse.containsMouse && root.tooltip !== ""
+    y: root.height + 2
+
+    background: Rectangle {
+      color: Style.base
+    }
+    contentItem: Text {
+      color: Style.text
+      font.family: Style.fontFamily
+      font.pixelSize: Style.fontSize
+      text: root.tooltip
+      textFormat: Text.PlainText
+    }
+  }
 }
