@@ -51,19 +51,18 @@ its output is disconnected and returns when it reconnects.
 ## Validation
 
 ```sh
-node --test
+make check
+make test
 ```
 
-The suite needs Node.js, `git`, and `qs`. It tests the production JavaScript and the installer, loads the
+The test suite needs Node.js, `git`, and `qs`. It tests the production JavaScript and the installer, loads the
 clock, audio, and tray components offscreen against stand-in objects, and drives
 Niri IPC through a temporary Unix socket. It does not change startup settings.
 Network and CPU services, tooltips, launcher commands, real device signals,
 popup placement/submenu rendering, `local.json` output selection, and monitor hotplug need a live desktop check.
 
-For static checks, run `node --check` on `BarLogic.js` and the test files, `shellcheck install.sh`, and
-`qmllint -W 0` on the config's QML files with the installed Qt and Quickshell QML
-import directories supplied via `-I`. Run it from the parent directory
-(`-i bilskirnir/qmldir bilskirnir/*.qml`): qmllint 6.12 misreads `-i qmldir`
-when the current directory holds that qmldir.
-The narrow lint exemptions document Quickshell's runtime-selected PanelWindow
-backend and opaque ObjectModel metadata.
+`make check` runs Qt's qmlformat and qmllint and the ShellCheck and shfmt
+checks. Lint warnings fail the check; the only inline exemptions document
+Quickshell's runtime-selected PanelWindow backend and opaque ObjectModel
+metadata. QML fixtures are linted beside copies of the production components,
+matching how the tests load them.

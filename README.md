@@ -47,8 +47,25 @@ falls back to every output.
 
 ```sh
 direnv allow   # or: nix develop
-node --test
+make check     # lint and verify formatting without editing files
+make fmt       # apply QML and shell formatting
+make test      # run the Node and offscreen Quickshell tests
 ```
 
-`qs` comes from the system. See [docs/bar.md](docs/bar.md) for what the suite
-covers and the static checks.
+`make lint` and `make fmt-check` run the two static checks separately. Qt's
+`qmlformat`, `qmllint`, and `qmlls`, plus ShellCheck and shfmt, come from the
+dev shell; the runtime `qs` comes from the system. Outside Nix, put these tools
+on PATH and set `BILSKIRNIR_QML_IMPORT_PATH` to the colon-separated Qt and
+Quickshell QML import directories.
+
+To opt into the pre-commit hook, run `git config --local core.hooksPath .githooks`
+from the checkout. Commit from the dev shell (or with the same tools and import
+paths available). The hook runs only when a commit touches QML, shell, JavaScript, `qmldir`, or the
+Qt tool settings. It checks the staged snapshot, formats only changed files, lints
+all staged QML (lint is cross-file), and never rewrites anything.
+
+For editor support, use `qmlls` from the same Qt version. Create an empty
+`.qmlls.ini` beside `shell.qml` if it is absent, then run Quickshell so it can
+populate the machine-specific paths; the file is ignored by Git.
+
+See [docs/bar.md](docs/bar.md) for validation coverage.
