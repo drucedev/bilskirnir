@@ -155,3 +155,21 @@ function clockFormat(date, alternate) {
     const week = String(isoWeek(date)).padStart(2, "0");
     return "dd MMMM 'W" + week + "' yyyy";
 }
+
+// local.json is optional and untracked: {"outputs": ["DP-5"]}. An empty file
+// or no list means every output.
+function configuredOutputs(text) {
+    if (!text.trim()) return null;
+    const config = JSON.parse(text);
+    if (config === null || typeof config !== "object" || Array.isArray(config))
+        throw new Error("local.json: expected an object");
+    const outputs = config.outputs;
+    if (outputs === undefined) return null;
+    if (!Array.isArray(outputs) || !outputs.every(name => typeof name === "string"))
+        throw new Error("local.json: outputs must be a list of output names");
+    return outputs;
+}
+
+function showsBar(screenName, outputs) {
+    return outputs === null || outputs.includes(screenName);
+}

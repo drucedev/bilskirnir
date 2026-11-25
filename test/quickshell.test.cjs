@@ -7,7 +7,9 @@ const net = require('node:net');
 const { spawn } = require('node:child_process');
 const { test } = require('node:test');
 
-const BAR = path.join(__dirname, '../linux/.config/quickshell/bar');
+const BAR = path.join(__dirname, '..');
+// The checkout is the Quickshell config; only its root .qml, .js, and qmldir files are loaded.
+const shellFiles = fs.readdirSync(BAR).filter(name => /\.(qml|js)$|^qmldir$/.test(name));
 
 // Execute the same plain JavaScript that QML imports, without a second implementation.
 const logic = vm.createContext({ Date, Math, JSON });
@@ -17,7 +19,7 @@ vm.runInContext(fs.readFileSync(path.join(BAR, 'BarLogic.js'), 'utf8'), logic);
 async function componentTest(fixture, extraEnv = {}) {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'quickshell-bar-test-'));
     try {
-        fs.cpSync(BAR, dir, { recursive: true });
+        for (const name of shellFiles) fs.copyFileSync(path.join(BAR, name), path.join(dir, name));
         fs.copyFileSync(path.join(__dirname, 'quickshell', fixture), path.join(dir, 'test.qml'));
         const env = { ...process.env, QT_QPA_PLATFORM: 'offscreen', NO_COLOR: '1', ...extraEnv };
         delete env.WAYLAND_DISPLAY;
@@ -162,6 +164,19 @@ test('CPU usage excludes guest time, counts iowait as idle, and waits after a re
     const after = logic.cpuSample('cpu 120 0 60 850 70 0 0 0 25 0\ncpu0 60 0 30 425 35 0 0 0 12 0');
     assert.equal(logic.cpuUsage(before, after), 'Total: 30%\ncpu0: 30%');
     assert.equal(logic.cpuUsage(after, before), 'CPU: collecting usage…');
+});
+
+test('local config selects bar outputs; no config means every output', () => {
+    assert.equal(logic.configuredOutputs(''), null);
+    assert.equal(logic.configuredOutputs('{}'), null);
+    assert.deepEqual(Array.from(logic.configuredOutputs('{"outputs": ["DP-5", "HDMI-A-5"]}')), ['DP-5', 'HDMI-A-5']);
+    assert.throws(() => logic.configuredOutputs('{"outputs": "DP-5"}'), /outputs/);
+    assert.throws(() => logic.configuredOutputs('{"outputs": [5]}'), /outputs/);
+    assert.throws(() => logic.configuredOutputs('{'));
+    for (const notObject of ['[]', '42', '"DP-5"', 'null']) assert.throws(() => logic.configuredOutputs(notObject), /object/);
+    assert.equal(logic.showsBar('HDMI-A-5', null), true);
+    assert.equal(logic.showsBar('HDMI-A-5', ['DP-5']), false);
+    assert.equal(logic.showsBar('DP-5', ['DP-5']), true);
 });
 
 test('ISO week handles year boundaries', () => {

@@ -1,0 +1,4 @@
+# Per-machine output list; see README.
+local.json
+# direnv cache for the flake devShell.
+.direnv/
