@@ -1,10 +1,11 @@
-# Quickshell bar (Linux)
+# Bar
 
-The `bar` config is a lightweight, Omarchy Quattro-inspired status bar:
-a 36px top bar on `DP-5`, Catppuccin Mocha at 92%
+Bilskirnir's bar is a lightweight, Omarchy Quattro-inspired status bar:
+a 36px top bar on every output (or those listed in `local.json`), Catppuccin Mocha at 92%
 background opacity, and JetBrainsMono Nerd Font. It requires Quickshell 0.3.x
 with Networking, PipeWire, and SystemTray support and Qt 6.8+ for windowed
-popups (provided by NixOS here), NetworkManager's `nmcli`, and the existing Ghostty/btop and power-menu tools.
+popups (provided by NixOS here), NetworkManager's `nmcli`, Ghostty/btop, and a `power-menu` command in
+`$XDG_BIN_HOME` (default `~/.local/bin`).
 
 - Left: Niri workspaces from all outputs, ordered by output and workspace index;
   click to focus by stable ID. Named workspaces show a fixed icon; other workspaces
@@ -34,33 +35,35 @@ plugin framework, background command polling, or additional daemon.
 
 ## Running
 
-Stowing the `linux` package links the config into `~/.config/quickshell/bar/`.
-Niri starts `qs --no-duplicate -c bar` at login through `cfg/autostart.kdl`.
-Config reloads do not run startup commands; to start the bar in an existing session:
+Your compositor starts `qs --no-duplicate -c bilskirnir` at login; on Niri,
+`spawn-at-startup "qs" "--no-duplicate" "-c" "bilskirnir"`. Config reloads do not
+run startup commands; to start the bar in an existing Niri session:
 
 ```sh
-niri msg action spawn -- qs --no-duplicate -c bar
+niri msg action spawn -- qs --no-duplicate -c bilskirnir
 ```
 
-For a foreground development run, use `qs --no-duplicate -c bar` (Ctrl+C stops
-that process), or `qs --no-duplicate -p linux/.config/quickshell/bar` without
-stowing. The bar disappears when `DP-5` is disconnected and returns when it
-reconnects.
+For a foreground development run, use `qs --no-duplicate -c bilskirnir` (Ctrl+C
+stops that process), or `qs --no-duplicate -p <checkout>` for another checkout.
+Quickshell reloads edited files, including `local.json`. A bar disappears when
+its output is disconnected and returns when it reconnects.
 
 ## Validation
 
 ```sh
-node --test test/quickshell.test.cjs
+node --test
 ```
 
-The suite needs Node.js and `qs`. It tests the production JavaScript, loads the
+The suite needs Node.js, `git`, and `qs`. It tests the production JavaScript and the installer, loads the
 clock, audio, and tray components offscreen against stand-in objects, and drives
 Niri IPC through a temporary Unix socket. It does not change startup settings.
 Network and CPU services, tooltips, launcher commands, real device signals,
-popup placement/submenu rendering, and monitor hotplug need a live desktop check.
+popup placement/submenu rendering, `local.json` output selection, and monitor hotplug need a live desktop check.
 
-For static checks, run `node --check` on `BarLogic.js` and the test runner, and
+For static checks, run `node --check` on `BarLogic.js` and the test files, `shellcheck install.sh`, and
 `qmllint -W 0` on the config's QML files with the installed Qt and Quickshell QML
-import directories supplied via `-I`, and `-i linux/.config/quickshell/bar/qmldir`.
+import directories supplied via `-I`. Run it from the parent directory
+(`-i bilskirnir/qmldir bilskirnir/*.qml`): qmllint 6.12 misreads `-i qmldir`
+when the current directory holds that qmldir.
 The narrow lint exemptions document Quickshell's runtime-selected PanelWindow
 backend and opaque ObjectModel metadata.
