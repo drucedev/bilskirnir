@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import "../common"
 
 BarButton {
   foreground: hovered ? Style.red : Style.text

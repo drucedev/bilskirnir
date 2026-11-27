@@ -7,19 +7,19 @@ const net = require('node:net');
 const { spawn } = require('node:child_process');
 const { test } = require('node:test');
 
-const BAR = path.join(__dirname, '..');
-// The checkout is the Quickshell config; only its root .qml, .js, and qmldir files are loaded.
-const shellFiles = fs.readdirSync(BAR).filter(name => /\.(qml|js)$|^qmldir$/.test(name));
+const ROOT = path.join(__dirname, '..');
+// QML modules the shell imports; fixtures load them the same way.
+const MODULES = ['bar', 'common'];
 
 // Execute the same plain JavaScript that QML imports, without a second implementation.
 const logic = vm.createContext({ Date, Math, JSON });
-vm.runInContext(fs.readFileSync(path.join(BAR, 'BarLogic.js'), 'utf8'), logic);
+vm.runInContext(fs.readFileSync(path.join(ROOT, 'bar', 'BarLogic.js'), 'utf8'), logic);
 
-// Runs a fixture beside the production components in offscreen qs; it must log PASS.
+// Runs a fixture beside the production modules in offscreen qs; it must log PASS.
 async function componentTest(fixture, extraEnv = {}) {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'quickshell-bar-test-'));
     try {
-        for (const name of shellFiles) fs.copyFileSync(path.join(BAR, name), path.join(dir, name));
+        for (const name of MODULES) fs.cpSync(path.join(ROOT, name), path.join(dir, name), { recursive: true });
         fs.copyFileSync(path.join(__dirname, 'quickshell', fixture), path.join(dir, 'test.qml'));
         const env = { ...process.env, QT_QPA_PLATFORM: 'offscreen', NO_COLOR: '1', ...extraEnv };
         delete env.WAYLAND_DISPLAY;

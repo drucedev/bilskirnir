@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Services.SystemTray
+import "../common"
 
 Item {
   implicitHeight: Style.barHeight

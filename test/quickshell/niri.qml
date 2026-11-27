@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell
-import "." as Bar
+import "bar" as Bar
 
 ShellRoot {
   id: root

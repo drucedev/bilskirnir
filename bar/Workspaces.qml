@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "../common"
 import "BarLogic.js" as Logic
 
 Row {

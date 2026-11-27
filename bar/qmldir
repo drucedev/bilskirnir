@@ -1,4 +1,4 @@
-singleton Style 1.0 Style.qml
+Bar 1.0 Bar.qml
 BarButton 1.0 BarButton.qml
 Clock 1.0 Clock.qml
 Niri 1.0 Niri.qml

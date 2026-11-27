@@ -134,7 +134,7 @@ test('upgrades only fast-forward main', () => {
 
 test('missing dependencies are reported without failing the install', () => {
     const { btop, 'fc-list': _, ...tools } = allTools;
-    // Only a suffixed sibling family is installed, which Style.qml does not request.
+    // Only a suffixed sibling family is installed, which common/Style.qml does not request.
     const box = sandbox({ ...tools, 'fc-list': 'echo "JetBrainsMono Nerd Font Mono,JetBrainsMono NFM"' });
     try {
         const result = box.install();

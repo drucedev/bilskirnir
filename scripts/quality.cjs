@@ -5,6 +5,8 @@ const { spawnSync } = require('node:child_process');
 
 const root = path.resolve(__dirname, '..');
 const fixtures = 'test/quickshell/';
+// QML modules imported by shell.qml and the test fixtures.
+const modules = ['bar', 'common'];
 
 function run(command, args, cwd, capture = false) {
     const result = spawnSync(command, args, {
@@ -34,10 +36,9 @@ function scratch(callback) {
 
 function lintQml(dir, files, imports) {
     if (files.length === 0) return;
-    // Qt 6.12 misreads -i qmldir when run from the directory containing it.
-    const parent = path.dirname(dir);
-    const relative = file => path.join(path.basename(dir), file);
-    run('qmllint', ['-W', '0', ...imports, '-i', relative('qmldir'), ...files.map(relative)], parent);
+    // qmllint ignores a file's own qmldir unless it is passed explicitly, e.g. for singletons.
+    const qmldirs = modules.flatMap(module => ['-i', path.join(module, 'qmldir')]);
+    run('qmllint', ['-W', '0', ...imports, ...qmldirs, ...files], dir);
 }
 
 function lint(dir, qml, shell) {
@@ -48,11 +49,11 @@ function lint(dir, qml, shell) {
         const tests = qml.filter(file => file.startsWith(fixtures));
         lintQml(dir, qml.filter(file => !file.startsWith(fixtures)), imports);
         if (tests.length) scratch(copy => {
-            // Match the test runner: fixtures import production components through ".".
-            for (const file of fs.readdirSync(dir)) {
-                if (/\.(qml|js)$|^(qmldir|\.qmllint\.ini)$/.test(file)) {
-                    fs.copyFileSync(path.join(dir, file), path.join(copy, file));
-                }
+            // Match the test runner: fixtures sit beside the production modules.
+            const settings = path.join(dir, '.qmllint.ini');
+            if (fs.existsSync(settings)) fs.copyFileSync(settings, path.join(copy, '.qmllint.ini'));
+            for (const module of modules) {
+                fs.cpSync(path.join(dir, module), path.join(copy, module), { recursive: true });
             }
             for (const file of tests) fs.copyFileSync(path.join(dir, file), path.join(copy, path.basename(file)));
             lintQml(copy, tests.map(file => path.basename(file)), imports);
@@ -89,7 +90,7 @@ try {
     if (mode === 'staged') {
         // Deletions and rename sources count: removing a component can break its consumers.
         const changed = gitPaths(['diff', '--cached', '--name-only', '--no-renames']);
-        const relevant = file => /\.(qml|sh|js)$|^qmldir$|^\.qml(format|lint)\.ini$/.test(file)
+        const relevant = file => /\.(qml|sh|js)$|(^|\/)qmldir$|^\.qml(format|lint)\.ini$/.test(file)
             || file === '.githooks/pre-commit';
         if (changed.some(relevant)) {
             // Check staged content, unconverted, even when the working tree has other edits.

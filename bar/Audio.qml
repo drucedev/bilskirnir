@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Services.Pipewire
+import "../common"
 import "BarLogic.js" as Logic
 
 BarButton {

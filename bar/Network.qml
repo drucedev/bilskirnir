@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell.Io
 import Quickshell.Networking
+import "../common"
 import "BarLogic.js" as Logic
 
 BarButton {

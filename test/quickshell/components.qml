@@ -1,8 +1,8 @@
 //@ pragma UseQApplication
 import QtQuick
 import Quickshell
-// The test runner copies this fixture beside the production components.
-import "." as Bar
+// The test runner copies this fixture beside the production modules.
+import "bar" as Bar
 
 ShellRoot {
   Component.onCompleted: Qt.callLater(() => {

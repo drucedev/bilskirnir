@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import "../common"
 
 Item {
   id: root

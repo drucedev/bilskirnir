@@ -3,8 +3,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Quickshell.Wayland
-import "BarLogic.js" as Logic
+import "bar/BarLogic.js" as Logic
+import "bar"
 
 ShellRoot {
   id: root
@@ -36,57 +36,8 @@ ShellRoot {
   Variants {
     model: Quickshell.screens.filter(screen => Logic.showsBar(screen.name, root.outputs))
 
-    // Quickshell selects the creatable layer-shell backend at runtime.
-    // qmllint disable uncreatable-type
-    PanelWindow {
-      // qmllint enable uncreatable-type
-      required property var modelData
-
-      WlrLayershell.layer: WlrLayer.Top
-      WlrLayershell.namespace: "quickshell-bar"
-      color: Style.background
-      exclusiveZone: Style.barHeight
-      implicitHeight: Style.barHeight
-      screen: modelData
-
-      anchors {
-        left: true
-        right: true
-        top: true
-      }
-      Row {
-        anchors.left: parent.left
-        anchors.leftMargin: 8
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: 12
-
-        Workspaces {
-          service: niri
-        }
-        FocusedApp {
-          service: niri
-        }
-      }
-      Clock {
-        anchors.centerIn: parent
-      }
-      Row {
-        anchors.right: parent.right
-        anchors.rightMargin: 8
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: 20
-
-        Tray {
-        }
-        Network {
-        }
-        Audio {
-        }
-        Cpu {
-        }
-        Power {
-        }
-      }
+    Bar {
+      service: niri
     }
   }
 }
